@@ -3,4 +3,10 @@ from django.http import HttpResponse
 
 
 def home_page(request):
-    return render(request, 'home.html')
+    if request.method != "POST":
+        return render(request, "home.html", {})
+    else:
+        item = request.POST['item_text']
+        return render(request, "home.html", {
+            'new_item_text': item,
+        })
