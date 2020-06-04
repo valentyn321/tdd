@@ -5,16 +5,32 @@ from lists.models import Item
 
 class HomePageTest(TestCase):
 
-    def test_view_return_correct_html(self):
+    def setUp(self):
         client = Client()
-        response = client.get('/')
+
+    def test_view_return_correct_html(self):
+        response = self.client.get('/')
         self.assertTemplateUsed('home.html')
 
     def test_save_POST_request(self):
-        client = Client()
-        response = client.post('/', {'item_text': 'A new list item'})
-        self.assertIn("A new list item", response.content.decode())
-        self.assertTemplateUsed(response, 'home.html')
+        response = self.client.post('/', {'item_text': 'A new list item'})
+        self.assertEqual(Item.objects.count(), 1)
+        new_item = Item.objects.first()
+        self.assertEqual(new_item.text, 'A new list item')
+
+    def test_redicrect_correctly(self):
+        response = self.client.post('/', {'item_text': 'A new list item'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['location'], '/')
+        
+    def test_display_all_list_items(self):
+        Item.objects.create(text='Item 1')
+        Item.objects.create(text='Item 2')
+
+        response = self.client.get('/')
+
+        self.assertIn('Item 1',response.content.decode())
+        self.assertIn('Item 2',response.content.decode())
 
 
 class ItemModelTest(TestCase):
@@ -35,4 +51,9 @@ class ItemModelTest(TestCase):
         second_item_from_qs = qs[1]
         self.assertEqual(first_item_from_qs.text, 'First_item')
         self.assertEqual(second_item_from_qs.text, 'Second_item')
+
+    def test_save_item_only_when_necessery(self):
+        client = Client()
+        client.get('/')
+        self.assertEqual(Item.objects.count(), 0)
 
