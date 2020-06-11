@@ -20,4 +20,6 @@ from lists import views as l_views
 
 urlpatterns = [
     path("", l_views.home_page, name="home"),
+    path("lists/the-only-list-in-the-world/", l_views.view_list, name='view_list'),
+    path("lists/new", l_views.new_list, name='new_list')
 ]
